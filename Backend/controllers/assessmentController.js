@@ -6,7 +6,7 @@ const scoring = require('../services/scoring');
 exports.listTests = async (req, res) => {
   try {
     const tests = await AssessmentTestTemplate.find({}, 'name');
-    res.json(tests.map(t => t.name));
+    res.json(tests.map((test => test.name)));
   } catch (err) {
     res.status(500).json({ error: 'Failed to list tests' });
   }

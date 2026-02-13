@@ -11,4 +11,4 @@ const AssessmentResultSchema = new mongoose.Schema({
   feedback: { type: String }
 });
 
-module.exports = mongoose.model('AssessmentResult', AssessmentResultSchema); 
+module.exports = mongoose.model('AssessmentResult', AssessmentResultSchema);
