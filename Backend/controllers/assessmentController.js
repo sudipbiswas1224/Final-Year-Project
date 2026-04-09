@@ -16,7 +16,14 @@ exports.listTests = async (req, res) => {
 exports.getTestTemplate = async (req, res) => {
   try {
     const { type } = req.params;
+    console.log(type);
+
+    // Create a robust fuzzy search (case-insensitive regex)
+    //const normalizedTypePattern = new RegExp(`^${type}$`, 'i');
+
+    // Find the test using the fuzzy search pattern
     const test = await AssessmentTestTemplate.findOne({ name: type });
+
     if (!test) return res.status(404).json({ error: 'Test not found' });
     res.json(test);
   } catch (err) {
@@ -29,8 +36,14 @@ exports.submitAssessment = async (req, res) => {
   try {
     const userId = req.user._id;
     const { testType, responses, phase } = req.body;
-    const test = await AssessmentTestTemplate.findOne({ name: testType });
+
+    // Create a robust fuzzy search (case-insensitive regex)
+    const normalizedTypePattern = new RegExp(`^${testType}$`, 'i');
+
+    const test = await AssessmentTestTemplate.findOne({ name: normalizedTypePattern });
     if (!test) return res.status(404).json({ error: 'Test not found' });
+
+    // Validate responses array length
     if (!Array.isArray(responses) || responses.length !== test.questions.length) {
       return res.status(400).json({ error: 'Invalid responses' });
     }

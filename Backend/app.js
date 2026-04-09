@@ -28,7 +28,8 @@ app.use(morgan("dev"));
 // Mount routes directly on app
 app.use("/auth", require("./routes/auth"));
 app.use("/analytics", require("./routes/analytics"));
-app.use("/api/assessment",require("./routes/assessment"));
+app.use("/api/assessment", require("./routes/assessment"));
+app.use("/api/recommendations", require("./routes/recommendations"));
 
 // Error Handler
 app.use(errorHandler);
