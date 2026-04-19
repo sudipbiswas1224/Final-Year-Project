@@ -8,10 +8,18 @@ const analyticsRoutes = require('./routes/analytics');
 const AssessmentTestTemplate = require('./models/AssessmentTestTemplate');
 const Resource = require('./models/Resource');
 
+
+
+const coreOptions = {
+  origin: 'http://localhost:5173',
+  optionsSuccessStatus: 200
+}
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api', analyticsRoutes);
+
 
 // Connect to MongoDB and then start the server
 mongoose.connect(process.env.MONGO_URI).then(async () => {

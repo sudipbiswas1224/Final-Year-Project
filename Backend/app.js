@@ -25,9 +25,10 @@ app.use(hpp());
 app.use(compression());
 app.use(morgan("dev"));
 
+
 // Mount routes directly on app
-app.use("/auth", require("./routes/auth"));
-app.use("/analytics", require("./routes/analytics"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/assessment", require("./routes/assessment"));
 app.use("/api/recommendations", require("./routes/recommendations"));
 

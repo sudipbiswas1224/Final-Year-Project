@@ -9,11 +9,12 @@
 ## 📋 Table of Contents
 1. [Authentication](#authentication)
 2. [Assessment System](#assessment-system)
-3. [Chat System](#chat-system)
+3. [Recommendations](#recommendations)
 4. [Analytics](#analytics)
-5. [Data Models](#data-models)
-6. [Error Handling](#error-handling)
-7. [Frontend Implementation Guide](#frontend-implementation-guide)
+5. [Chat System](#chat-system)
+6. [Data Models](#data-models)
+7. [Error Handling](#error-handling)
+8. [Frontend Implementation Guide](#frontend-implementation-guide)
 
 ---
 
@@ -26,7 +27,7 @@ Authorization: Bearer <your-jwt-token>
 
 ### Register User
 
-**Endpoint:** `POST /auth/register`
+**Endpoint:** `POST /api/auth/register`
 
 **Request Body:**
 ```json
@@ -61,7 +62,7 @@ Authorization: Bearer <your-jwt-token>
 **Frontend Implementation:**
 ```javascript
 async function register(email, password, displayName) {
-  const response = await fetch('http://localhost:5000/auth/register', {
+  const response = await fetch('http://localhost:5000/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, displayName })
@@ -84,7 +85,7 @@ async function register(email, password, displayName) {
 
 ### Login User
 
-**Endpoint:** `POST /auth/login`
+**Endpoint:** `POST /api/auth/login`
 
 **Request Body:**
 ```json
@@ -118,7 +119,7 @@ async function register(email, password, displayName) {
 **Frontend Implementation:**
 ```javascript
 async function login(email, password) {
-  const response = await fetch('http://localhost:5000/auth/login', {
+  const response = await fetch('http://localhost:5000/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -418,9 +419,101 @@ async function getTestProgress(userId, testType) {
 
 ---
 
+## 🎯 Recommendations
 
+### Get Personalized Recommendations
 
-## 📦 Data Models
+**Endpoint:** `GET /api/recommendations/personalized`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "activities": [
+      {
+        "_id": "1",
+        "type": "activity",
+        "title": "5-4-3-2-1 Grounding",
+        "description": "Identify 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste."
+      }
+    ],
+    "videos": [],
+    "articles": [],
+    "music": []
+  }
+}
+```
+
+**Frontend Implementation:**
+```javascript
+async function getRecommendations() {
+  const token = localStorage.getItem('authToken');
+
+  const response = await fetch('http://localhost:5000/api/recommendations/personalized', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  return await response.json();
+}
+```
+
+---
+
+## 📊 Analytics
+
+### Get Available Tests (Dashboard/Analytics)
+
+**Endpoint:** `GET /api/analytics/tests/list`
+
+*Note: This operates similarly to the assessment tests endpoint, allowing analytics services to dynamically query available tests.*
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Success Response (200):**
+```json
+[
+  "PHQ-9",
+  "GAD-7",
+  "PSS",
+  "WHO-5",
+  "ISI"
+]
+```
+
+---
+
+### Get Test Template (Analytics context)
+
+**Endpoint:** `GET /api/analytics/tests/:type`
+
+**Path Parameters:**
+- `type`: Test name (e.g., "PHQ-9")
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## � Chat System
+
+*Note: The Chat & Analysis backend services are currently under development. Endpoints will be available in future releases (e.g., `POST /api/analysis/chat`).*
+
+---
+
+## �📦 Data Models
 
 ### User Object
 ```typescript
@@ -817,12 +910,12 @@ Use these curl commands or Postman collections:
 
 ```bash
 # Register
-curl -X POST http://localhost:5000/auth/register \
+curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test1234!","displayName":"Test User"}'
 
 # Login
-curl -X POST http://localhost:5000/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test1234!"}'
 
