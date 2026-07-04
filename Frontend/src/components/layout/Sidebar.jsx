@@ -7,6 +7,7 @@ import {
   BookHeart,
   BrainCircuit,
   MessageCircleHeart,
+  Stethoscope,
   UserCircle,
   LogOut,
   Menu,
@@ -24,6 +25,7 @@ const Sidebar = () => {
     { name: "Journal", path: "/journal", icon: BookHeart },
     { name: "Assessments", path: "/assessments", icon: BrainCircuit },
     { name: "AI Chat", path: "/chatbot", icon: MessageCircleHeart },
+    { name: "Doctors", path: "/doctors", icon: Stethoscope },
     { name: "Profile", path: "/profile", icon: UserCircle },
   ];
 

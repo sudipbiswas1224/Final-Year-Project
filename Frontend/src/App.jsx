@@ -10,6 +10,7 @@ import Journals from "./pages/Journals";
 import JournalEditor from "./pages/JournalEditor";
 import Chatbot from "./pages/Chatbot";
 import Recommendations from "./pages/Recommendations";
+import DoctorDirectory from "./pages/DoctorDirectory";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -46,6 +47,8 @@ function App() {
 
             {/* Phase 6: Recommendations & Polish */}
             <Route path="/recommendations" element={<Recommendations />} />
+
+            <Route path="/doctors" element={<DoctorDirectory />} />
 
             <Route
               path="/profile"

@@ -7,6 +7,7 @@ const assessmentRoutes = require('./routes/assessment');
 const analyticsRoutes = require('./routes/analytics');
 const AssessmentTestTemplate = require('./models/AssessmentTestTemplate');
 const Resource = require('./models/Resource');
+const Doctor = require('./models/Doctor');
 
 
 
@@ -54,3 +55,5 @@ async function autoSeedResources() {
     await seedResources();
   }
 }
+
+
