@@ -210,6 +210,83 @@ const seedResources = async () => {
                 type: "article",
                 tags: ["stress", "pss", "anxiety", "gad7", "depression", "phq9", "sleep", "insomnia", "isi", "wellbeing", "who5"],
                 targetSeverity: "all"
+            },
+            // --- WHO-5 Wellbeing specific resources ---
+            {
+                title: "WHO-5 Well-Being Index",
+                description: "Official information on the WHO-5 Well-Being Index questionnaire, its scoring, and what the results mean.",
+                url: "https://www.psykiatri-regionh.dk/who-5/Pages/default.aspx",
+                type: "article",
+                tags: ["wellbeing", "who5"],
+                targetSeverity: "all"
+            },
+            {
+                title: "Five Steps to Mental Wellbeing",
+                description: "NHS guidance on five evidence-based actions shown to improve mental wellbeing and life satisfaction.",
+                url: "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/five-steps-to-mental-wellbeing/",
+                type: "article",
+                tags: ["wellbeing", "who5", "stress", "pss"],
+                targetSeverity: "all"
+            },
+            {
+                title: "Wellbeing check-in: low mood and next steps",
+                description: "NHS Every Mind Matters guidance for people whose wellbeing score suggests low mood, with clear next-step options.",
+                url: "https://www.nhs.uk/every-mind-matters/mental-health-issues/low-mood-and-depression/",
+                type: "article",
+                tags: ["wellbeing", "who5", "depression", "phq9"],
+                targetSeverity: "severe"
+            },
+
+            // --- ISI / Insomnia - CBT-I focused (evidence-based first-line treatment) ---
+            {
+                title: "Cognitive Behavioural Therapy for Insomnia (CBT-I) Self-Help Guide",
+                description: "NHS self-help guide covering CBT-I, the evidence-based first-line treatment for chronic insomnia.",
+                url: "https://www.nhs.uk/every-mind-matters/mental-health-issues/sleep/",
+                type: "article",
+                tags: ["sleep", "insomnia", "isi"],
+                targetSeverity: "all"
+            },
+            {
+                title: "Insomnia - National Institute of Neurological Disorders",
+                description: "Overview of insomnia causes, symptoms, and treatment options from a US federal health institute.",
+                url: "https://www.ninds.nih.gov/health-information/disorders/insomnia",
+                type: "article",
+                tags: ["sleep", "insomnia", "isi"],
+                targetSeverity: "moderate"
+            },
+            {
+                title: "Sleep Hygiene Tips",
+                description: "CDC guidance on sleep hygiene practices that support consistent, restorative sleep.",
+                url: "https://www.cdc.gov/sleep/about/index.html",
+                type: "article",
+                tags: ["sleep", "insomnia", "isi", "wellbeing", "who5"],
+                targetSeverity: "all"
+            },
+
+            // --- PSS / Stress - dedicated management resources ---
+            {
+                title: "Stress Management",
+                description: "APA overview of stress management strategies, covering causes, effects, and coping techniques.",
+                url: "https://www.apa.org/topics/stress",
+                type: "article",
+                tags: ["stress", "pss"],
+                targetSeverity: "all"
+            },
+            {
+                title: "Coping with Stress",
+                description: "CDC guidance on recognizing signs of stress and practical, evidence-informed coping strategies.",
+                url: "https://www.cdc.gov/mental-health/living-with/coping-with-stress.html",
+                type: "article",
+                tags: ["stress", "pss", "wellbeing", "who5"],
+                targetSeverity: "moderate"
+            },
+            {
+                title: "How to manage stress",
+                description: "NHS guidance specifically for high, persistent stress, including when to seek further support.",
+                url: "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+                type: "article",
+                tags: ["stress", "pss"],
+                targetSeverity: "severe"
             }
         ];
 

@@ -1,83 +1,178 @@
-# Mental Health Resource Authenticity Documentation
+# Assessment-Based Recommendation Engine — Documentation
 
-This document explains how the selected resources were evaluated for authenticity and lists the full resource set currently proposed for the app's recommendation engine. The resource strategy is designed around five assessment sources: PHQ-9, GAD-7, PSS, WHO-5, and ISI, with multi-tagging used whenever one resource is genuinely useful across more than one mental health domain.[1][2][3][4]
+## 1. Overview
 
-## Authenticity criteria
+The recommendation engine is a rule-based content recommendation system that suggests curated mental health resources (articles, videos, guided activities, and music) to users based on their psychometric assessment results. The system supports five standardized, clinically-recognized assessments:
 
-The resources were selected using a practical authenticity framework based on source credibility, clinical relevance, public accessibility, and appropriateness for a non-diagnostic wellbeing app.[1][2][3][5]
+| Assessment | Full Name | Measures |
+|---|---|---|
+| PHQ-9 | Patient Health Questionnaire-9 | Depression symptom severity |
+| GAD-7 | Generalized Anxiety Disorder-7 | Anxiety symptom severity |
+| PSS | Perceived Stress Scale | Perceived stress levels |
+| WHO-5 | WHO-5 Well-Being Index | General psychological wellbeing |
+| ISI | Insomnia Severity Index | Sleep/insomnia severity |
 
-### 1. Official or institution-backed sources
+The engine's goal is to close the loop between assessment and action: rather than simply reporting a score back to the user, it immediately surfaces relevant, credible, severity-appropriate self-help content — and it does so differently depending on whether the user has taken zero, one, or multiple assessments.
 
-Priority was given to resources from recognized public health and clinical institutions such as the National Institute of Mental Health (NIMH), the World Health Organization (WHO), the United Nations, the NHS, Mayo Clinic, and Therapist Aid because these organizations publish mental health content for education, self-help, and public support at scale.[1][2][4][3][5][6][7]
+---
 
-### 2. Direct resource URLs
+## 2. System Architecture
 
-Where video resources were included, the list uses direct video links rather than generic channel links so each item can be audited, previewed, and stored as a concrete recommendation object in the database.[8][9][10][11][12]
+The engine consists of three main components:
 
-### 3. Domain fit with assessment instruments
+1. **Resource Database** (`Resource` model, MongoDB) — a curated collection of external mental-health resources, each tagged by topic and target severity level.
+2. **Assessment Result Store** (`AssessmentResult` model, MongoDB) — stores each completed assessment attempt per user, including test type, raw score, and a human-readable severity interpretation.
+3. **Recommendation Service** (`recommendationService.js`) — the core logic layer that queries both of the above, applies severity mapping and relevance scoring, and returns a ranked, grouped set of recommendations.
 
-Each resource was tagged to fit one or more assessment domains: depression with PHQ-9, anxiety with GAD-7, stress with PSS, wellbeing with WHO-5, and sleep or insomnia with ISI.[1][2][3][4] Multi-tagging was intentionally allowed because many evidence-informed self-help resources are relevant across overlapping problems such as anxiety, stress, and sleep disturbance.[13][14][15]
+### Data Flow
 
-### 4. Safe educational or supportive scope
+```
+User completes assessment(s)
+        ↓
+AssessmentResult saved to MongoDB (per test type, timestamped)
+        ↓
+getRecommendationsForUser(userId) called
+        ↓
+Fetch latest result for EACH test type the user has taken
+        ↓
+For each result: map test type → topic tags, map interpretation → normalized severity
+        ↓
+Query Resource collection using combined tag + severity conditions
+        ↓
+Score and rank candidate resources by relevance
+        ↓
+Apply severity safety-net check
+        ↓
+Group results by content type (video / article / activity / music)
+        ↓
+Return to frontend
+```
 
-The selected resources are suitable for psychoeducation, coping support, guided relaxation, mindfulness, sleep preparation, and help-seeking. They are not presented as substitutes for diagnosis or emergency care, and severe cases should still surface professional or crisis-support pathways.[1][2][3][16]
+---
 
-### 5. Publicly accessible and reusable in an app context
+## 3. Resource Database
 
-Resources were chosen because they are publicly reachable on stable web pages or public video URLs, making them practical for use in a recommendation system where users click directly into content.[4][3][5][7]
+Each resource document follows this schema:
 
-## Why these sources are trustworthy
-
-| Source type | Why it is considered authentic |
+| Field | Description |
 |---|---|
-| NIMH | U.S. government mental health institute publishing condition overviews, care guidance, and public education materials.[1][2][13] |
-| WHO | Global public health authority with public mental wellbeing guidance and topic pages.[4][3][14] |
-| UN | Institutional overview page that aligns with global mental health and wellbeing framing.[17] |
-| NHS | National public health self-help hub with stress, mood, and sleep support content.[5] |
-| Mayo Clinic | Large clinical institution publishing practical, patient-facing self-help guidance such as mindfulness exercises.[18] |
-| Therapist Aid | Widely used therapy support site offering structured worksheets and guided exercises like progressive muscle relaxation.[7][19] |
-| Vandrevala Foundation | Real-world support access point for India-based mental health counselling and help-seeking support.[16] |
-| Public YouTube resources | Included only when there is a direct, specific video URL and the content is clearly educational, relaxation-based, or coping-oriented.[8][9][11][20][21] |
+| `title` | Display name of the resource |
+| `description` | Short summary of the content |
+| `url` | Link to the original source |
+| `type` | Content format: `article`, `video`, `activity`, or `music` |
+| `tags` | Topic keywords used for matching (e.g., `depression`, `phq9`, `sleep`) |
+| `targetSeverity` | Which severity tier the resource is best suited for: `mild`, `moderate`, `severe`, or `all` |
 
-## Full resource inventory
+### 3.1 Source Authenticity
 
-The following resources are the current curated set used across the five assessment areas. Multi-tagging is used when one resource fits multiple domains.
+All resources are drawn from recognized institutional, clinical, or professionally-credentialed sources, to ensure users are directed toward reliable information rather than unverified content. Sources used:
 
-| Title | Type | URL | Suggested tags |
-|---|---|---|---|
-| Depression - National Institute of Mental Health | article | https://www.nimh.nih.gov/health/topics/depression | depression, phq9, wellbeing, who5 [1] |
-| Depression - National Institute of Mental Health | article | https://www.nimh.nih.gov/health/publications/depression | depression, phq9 [22] |
-| Anxiety Disorders - National Institute of Mental Health | article | https://www.nimh.nih.gov/health/topics/anxiety-disorders | anxiety, gad7, stress, pss, wellbeing, who5 [2] |
-| Caring for Your Mental Health | article | https://www.nimh.nih.gov/health/topics/caring-for-your-mental-health | wellbeing, who5, stress, pss, sleep, insomnia, isi, anxiety, gad7, depression, phq9 [13] |
-| Mental well-being: resources for the public | article | https://www.who.int/news-room/feature-stories/mental-well-being-resources-for-the-public | wellbeing, who5, stress, pss, anxiety, gad7 [3] |
-| Mental health | article | https://www.who.int/health-topics/mental-health | wellbeing, who5, stress, pss, depression, phq9, anxiety, gad7 [4] |
-| Mental Health and Wellbeing | article | https://www.un.org/en/global-issues/mental-health | wellbeing, who5, stress, pss, anxiety, gad7 [17] |
-| Every Mind Matters | article | https://www.nhs.uk/every-mind-matters/ | stress, pss, anxiety, gad7, depression, phq9, sleep, insomnia, isi, wellbeing, who5 [5] |
-| Lifestyle to Support Mental Health | article | https://www.psychiatry.org/patients-families/lifestyle-to-support-mental-health | wellbeing, who5, stress, pss, sleep, isi [6] |
-| Mindfulness exercises | activity | https://www.mayoclinic.org/tests-procedures/meditation/in-depth/mindfulness-exercises/art-20046356 | wellbeing, who5, stress, pss, sleep, insomnia, isi, anxiety, gad7 [18] |
-| Progressive Muscle Relaxation Script | activity | https://www.therapistaid.com/therapy-worksheet/progressive-muscle-relaxation-script | stress, pss, anxiety, gad7, sleep, insomnia, isi, wellbeing, who5 [23] |
-| Progressive Muscle Relaxation Exercise | activity | https://www.therapistaid.com/therapy-video/progressive-muscle-relaxation | stress, pss, anxiety, gad7, sleep, insomnia, isi, wellbeing, who5 [19] |
-| A Body Scan Meditation to Prepare Mind and Body for Sleep | activity | https://www.mindful.org/a-body-scan-meditation-to-help-you-sleep/ | sleep, insomnia, isi, stress, pss, anxiety, gad7, wellbeing, who5 [24] |
-| Guided Body Scan Meditation for Sleep | activity | https://www.youtube.com/watch?v=kPtVGqaMJAk | sleep, insomnia, isi, stress, pss, anxiety, gad7, wellbeing, who5 [25] |
-| Progressive Muscle Relaxation for Sleep \| Full-Body Guided Meditation to Release Tension | activity | https://www.youtube.com/watch?v=kG3_bGadSJQ | sleep, insomnia, isi, stress, pss, anxiety, gad7, wellbeing, who5 [20] |
-| Progressive Muscular Relaxation Guided Sleep Meditation for Anxiety & Insomnia Relief at Bedtime | activity | https://www.youtube.com/watch?v=y1TOqzOWV3M | sleep, insomnia, isi, anxiety, gad7, stress, pss, wellbeing, who5 [21] |
-| What is anxiety? mental health minute with Kati Morton | video | https://www.youtube.com/watch?v=2oFZfe89VDU | anxiety, gad7, stress, pss [9] |
-| 7 Proven Ways To Manage Anxiety | video | https://www.youtube.com/watch?v=whrN7ujh3Yk | anxiety, gad7, stress, pss, wellbeing, who5 [11] |
-| What to do with Anxiety in Your Body | video | https://www.youtube.com/watch?v=-v34YfjfKUk&vl=en | anxiety, gad7, stress, pss, sleep, insomnia, isi [26] |
-| Having a Panic Attack? The Anti-Struggle Technique | video | https://www.youtube.com/watch?v=2CQpyA485wc&vl=en | anxiety, gad7, stress, pss [27] |
-| Depression, Anxiety and WHAT IS NORMAL | video | https://www.youtube.com/watch?v=U4JmP59SwRs | depression, phq9, anxiety, gad7, wellbeing, who5 [8] |
-| How Your Anxiety May Lead to Depression | video | https://www.youtube.com/watch?v=jGCyQcvfsBQ | anxiety, gad7, depression, phq9, stress, pss [10] |
-| Can You Fully Recover From Depression? | video | https://www.youtube.com/watch?v=3r1vz2ML-HI | depression, phq9, wellbeing, who5 [28] |
-| Get Stress & Anxiety Relief with These Effective Ways to Reduce Stress | video | https://www.youtube.com/watch?v=YXhdbsa7HkA | stress, pss, anxiety, gad7, wellbeing, who5 [12] |
-| FALL INTO SLEEP INSTANTLY Healing of Stress, Anxiety and Depressive States INSOMNIA RELIEF | music | https://www.youtube.com/watch?v=i9sR_T76H34 | sleep, insomnia, isi, stress, pss, anxiety, gad7, depression, phq9, wellbeing, who5 [29] |
-| Beautiful Relaxing Music for Stress Relief ~ Calming Music | music | https://www.youtube.com/watch?v=lFcSrYw-ARY | stress, pss, sleep, insomnia, isi, wellbeing, who5, anxiety, gad7 [30] |
-| Relaxing Music for Stress Relief. Calm Music for Meditation, Sleep | music | https://www.youtube.com/watch?v=sztFHij0_W0 | stress, pss, sleep, insomnia, isi, wellbeing, who5 [31] |
-| Mindfulness Meditation Music for Focus, Concentration to Relax | music | https://www.youtube.com/watch?v=EkbM5EfFyME | wellbeing, who5, stress, pss [32] |
-| Sound of Inner Peace 14 \| 528 Hz \| Relaxing Music | music | https://www.youtube.com/watch?v=FTqrQsSIKR0 | wellbeing, who5, stress, pss, sleep, insomnia, isi [33] |
-| Free 24x7 Mental Health Counselling - Vandrevala Foundation | article | https://www.vandrevalafoundation.com/free-counseling | depression, phq9, anxiety, gad7, stress, pss, wellbeing, who5, sleep, insomnia, isi [16] |
+**Institutional / Government Health Bodies**
+- National Institute of Mental Health (NIMH) — https://www.nimh.nih.gov
+- World Health Organization (WHO) — https://www.who.int
+- United Nations (UN) — https://www.un.org
+- UK National Health Service (NHS) — https://www.nhs.uk
+- US Centers for Disease Control and Prevention (CDC) — https://www.cdc.gov
+- National Institute of Neurological Disorders and Stroke (NINDS) — https://www.ninds.nih.gov
+- American Psychological Association (APA) — https://www.apa.org
 
-## Notes for implementation
+**Clinical / Professional Platforms**
+- Mayo Clinic — https://www.mayoclinic.org
+- Therapist Aid (clinician-built therapy resource platform) — https://www.therapistaid.com
+- Mindful.org (established mindfulness publication) — https://www.mindful.org
+- Vandrevala Foundation (24x7 mental health helpline, India) — https://www.vandrevalafoundation.com
+- WHO-5 official index maintainers (Psykiatri Region H) — https://www.psykiatri-regionh.dk/who-5/
 
-A resource does not need to belong to only one test bucket. In practice, a better recommendation model ranks items by the number of overlapping tags with the user's profile, then boosts exact severity matches, and finally falls back to broadly applicable resources tagged with `all` severity.[13][3][5]
+**Supplementary Self-Help Media**
+- YouTube content from licensed/credentialed creators (e.g., Kati Morton, a licensed therapist) and established guided-meditation/relaxation channels — used for guided exercises and psychoeducation, supplementary to the institutional articles above.
 
-For severe score patterns, self-help resources should be paired with a help-seeking or counselling resource so the app does not rely only on passive content recommendations.[1][2][16]
+### 3.2 Resource Coverage by Assessment
+
+| Assessment | Topic Tags | Severity Tiers Covered |
+|---|---|---|
+| PHQ-9 | `depression`, `phq9` | mild, moderate, severe, all |
+| GAD-7 | `anxiety`, `gad7` | mild, moderate, severe, all |
+| PSS | `stress`, `pss` | mild, moderate, severe, all |
+| WHO-5 | `wellbeing`, `who5` | mild, moderate, severe, all |
+| ISI | `sleep`, `insomnia`, `isi` | mild, moderate, severe, all |
+
+---
+
+## 4. Recommendation Mechanism
+
+### 4.1 Two User Pathways
+
+**Pathway A — User has not taken any assessment**
+The system returns general wellbeing-oriented resources (tagged `wellbeing` / `who5`, `targetSeverity: all`), so a first-time user still receives useful, non-clinical content rather than an empty state.
+
+**Pathway B — User has taken one or more assessments**
+The system fetches the *most recent result for every test type the user has completed* — not just the single latest assessment overall. This ensures that if a user has, for example, taken both PHQ-9 and GAD-7, recommendations reflect both results rather than only whichever was completed most recently.
+
+### 4.2 Severity Normalization
+
+Each assessment type uses different wording in its result interpretation (e.g., PHQ-9 says "Moderately Severe", PSS says "High Perceived Stress", WHO-5 says "Poor Wellbeing"). Because of this, the system applies a **per-test-type severity mapping function** that normalizes every possible interpretation string into one of three standard tiers: `mild`, `moderate`, or `severe`. This ensures consistent, comparable severity handling across all five assessment types, rather than relying on a single generic keyword check that would misclassify non-PHQ9/GAD7-style wording.
+
+### 4.3 Tag and Severity Matching
+
+For each completed assessment, the system builds a query condition combining:
+- The relevant **topic tags** for that test type (e.g., ISI → `sleep`, `insomnia`, `isi`)
+- The **normalized severity tier**, matched against resources tagged with that tier *or* tagged `all` (general-purpose resources applicable regardless of severity)
+
+These conditions are combined across all of the user's completed assessments using a logical OR, so the candidate resource pool draws from every assessment area the user has engaged with.
+
+### 4.4 Relevance Scoring and Ranking
+
+Rather than returning resources in arbitrary database order, each candidate resource is scored based on:
+- **Tag overlap** — how many of its tags match the user's assessment-derived tags (higher overlap = more relevant)
+- **Severity match bonus** — additional weight if the resource's `targetSeverity` exactly matches the user's severity tier for that assessment, with more weight given to higher severity matches
+
+Resources are then sorted by total score, deduplicated (in case one resource matches multiple assessments), and the top results are retained.
+
+### 4.5 Severity Safety Net
+
+If any of the user's assessments returned a `severe` classification, the system explicitly verifies that at least one `severe`-tier resource is present in the final recommendation set. If the scoring/ranking process did not naturally surface one, it is inserted at the top of the list. This ensures higher-risk users are never presented with only mild-tier content due to an artifact of the ranking algorithm.
+
+### 4.6 Output Grouping
+
+The final recommendation list is grouped by content type for frontend display:
+```
+{
+  videos: [...],
+  articles: [...],
+  activities: [...],
+  music: [...]
+}
+```
+
+---
+
+## 5. Example Flow
+
+**Scenario**: A user completes PHQ-9 (result: "Moderately Severe") and ISI (result: "Moderate clinical insomnia").
+
+1. System fetches latest PHQ-9 and ISI results for this user.
+2. PHQ-9 → tags: `depression`, `phq9`; severity: `severe`
+3. ISI → tags: `sleep`, `insomnia`, `isi`; severity: `moderate`
+4. Query pulls candidate resources matching either condition set.
+5. Resources are scored — e.g., an NHS depression article tagged `depression`, `phq9`, `targetSeverity: severe` scores highly against the PHQ-9 condition.
+6. Final list is deduplicated, sorted, and severity-checked (severe-tier PHQ-9 resource guaranteed present).
+7. Grouped output returned: e.g., 3 articles, 2 videos, 1 activity relevant to depression and sleep concerns.
+
+---
+
+## 6. Design Rationale
+
+- **Per-test-type fetching** (rather than single latest result) avoids losing relevant context when users take multiple assessments over time.
+- **Per-test severity normalization** was necessary because clinical assessments use different result vocabularies; a one-size-fits-all keyword match under-classified non-PHQ9/GAD7 results.
+- **Scoring over raw querying** ensures the most topically and severity-relevant content surfaces first, rather than whatever the database happens to return first.
+- **Severity safety net** reflects a deliberate design choice to bias toward caution: in a mental health context, it is safer to over-surface higher-severity support content than to risk a high-severity user only seeing generic self-help material.
+- **Institutional sourcing** ensures the platform is directing users toward information that is medically and psychologically credible, which is especially important given the sensitive nature of the content domain.
+
+---
+
+## 7. Future Improvements
+
+- Incorporate **trend analysis** across repeated assessments over time (e.g., worsening or improving scores) to further refine recommendations.
+- Add **user feedback loops** (e.g., "was this helpful?") to improve resource ranking over time.
+- Expand resource coverage with **localized/regional resources** based on user location.
+- Consider a **hybrid retrieval approach** (combining this rule-based system with semantic/embedding-based matching) for more nuanced content-to-need matching as the resource database grows.

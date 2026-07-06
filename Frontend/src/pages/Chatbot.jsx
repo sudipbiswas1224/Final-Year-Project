@@ -12,7 +12,7 @@ const welcomeMessage = {
 
 const normalizeMessage = (message) => ({
   id: message._id || message.id,
-  role: message.role === "model" ? "bot" : message.role,
+  role: message.role === "model" ? "model" : message.role,
   text: message.content,
   createdAt: message.createdAt,
 });
@@ -80,7 +80,7 @@ const Chatbot = () => {
         ...prev,
         {
           id: payload.clientId ? `${payload.clientId}-reply` : Date.now() + 1,
-          role: "bot",
+          role: "model",
           text: payload.content,
         },
       ]);
@@ -91,7 +91,7 @@ const Chatbot = () => {
         ...prev,
         {
           id: Date.now() + 1,
-          role: "bot",
+          role: "model",
           text: payload?.message || "I couldn't generate a reply just now.",
         },
       ]);
@@ -120,7 +120,7 @@ const Chatbot = () => {
         ...prev,
         {
           id: Date.now() + 1,
-          role: "bot",
+          role: "model",
           text: "The chat connection is not ready yet. Please wait a moment and try again.",
         },
       ]);
@@ -141,7 +141,7 @@ const Chatbot = () => {
       console.error(err);
       const fallback = {
         id: Date.now() + 1,
-        role: "bot",
+        role: "model",
         text: "I'm having trouble connecting right now, but please know you're not alone. Try again in a moment.",
       };
       setMessages((prev) => [...prev, fallback]);
@@ -171,7 +171,7 @@ const Chatbot = () => {
       <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
         <div className="mx-auto max-w-2xl space-y-6">
           {messages.map((msg) => {
-            const isBot = msg.role === "bot";
+            const isBot = msg.role === "model";
             return (
               <div
                 key={msg.id}
