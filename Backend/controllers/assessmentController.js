@@ -83,12 +83,34 @@ exports.getHistory = async (req, res) => {
 };
 
 // Get progress in a specific test type for a user
-exports.getProgress = async (req, res) => {
+// exports.getProgress = async (req, res) => {
+//   try {
+//     const { userId, testType } = req.params;
+//     const results = await AssessmentResult.find({ userId, testType }).sort({ date: 1 });
+//     res.json(results);
+//   } catch (err) {
+//     res.status(500).json({ error: 'Failed to fetch progress' });
+//   }
+// };
+
+exports.getAnalytics = async (req, res) => {
   try {
-    const { userId, testType } = req.params;
-    const results = await AssessmentResult.find({ userId, testType }).sort({ date: 1 });
-    res.json(results);
+    console.log("Fetching analytics for user:", req.params.userId);
+    const { userId } = req.params;
+    const results = await AssessmentResult.find({ userId }).sort({ date: -1 });
+    const groupedData = results.reduce((acc, result)=>{
+      if(!acc[result.testType]) acc[result.testType] = [];
+      acc[result.testType].push({date: result.date, totalScore: result.totalScore });
+      return acc;
+    }, {});
+
+    // sort it on the basis of date
+    for (const testType in groupedData) {
+      groupedData[testType].sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+    console.log(groupedData);
+    res.json(groupedData);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch progress' });
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
-};
+}

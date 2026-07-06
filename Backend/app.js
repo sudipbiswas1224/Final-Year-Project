@@ -28,7 +28,7 @@ app.use(morgan("dev"));
 
 // Mount routes directly on app
 app.use("/api/auth", require("./routes/auth"));
-app.use("/api/analytics", require("./routes/analytics"));
+// app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/assessment", require("./routes/assessment"));
 app.use("/api/recommendations", require("./routes/recommendations"));
 app.use("/api/journal", require("./routes/journal"));

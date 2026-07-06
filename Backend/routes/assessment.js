@@ -21,5 +21,7 @@ router.get('/history/:userId', authenticate, assessmentController.getHistory);
 
 // Get user progress for a test type
 // GET /api/assessment/:userId/:testType
-router.get('/:userId/:testType', authenticate, assessmentController.getProgress);
+// router.get('/:userId/:testType', authenticate, assessmentController.getProgress);
+
+router.get('/analytics/:userId', authenticate, assessmentController.getAnalytics);
 module.exports = router;

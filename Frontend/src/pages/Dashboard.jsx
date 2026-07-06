@@ -19,37 +19,55 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const formatShortDate = (value) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+const formatFullDate = (value) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
-  const [history, setHistory] = useState([]);
+  const [analytics, setAnalytics] = useState({});
+  const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         if (!user?.id) return;
-        console.log(user);
-        // Using user.id to fetch the history
-        const res = await axiosInstance.get(`/assessment/history/${user.id}`);
+        const res = await axiosInstance.get(`/assessment/analytics/${user.id}`);
 
-        let loadedHistory = res.data || [];
-        if (Array.isArray(loadedHistory)) {
-          loadedHistory = loadedHistory
-            .map((item) => {
-              const d = new Date(item.date);
-              return {
-                ...item,
-                date: d.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                }),
-                score: item.totalScore || 0,
-              };
-            })
-            .reverse(); // Chart reads left-to-right (oldest -> newest)
-        }
+        const groupedAnalytics = res.data || {};
+        const normalizedAnalytics = Object.entries(groupedAnalytics).reduce(
+          (acc, [testType, points]) => {
+            acc[testType] = Array.isArray(points)
+              ? points
+                  .map((point, index) => {
+                    const timestamp = new Date(point.date).getTime();
+                    return {
+                      id: `${testType}-${index}`,
+                      timestamp,
+                      score: point.totalScore || 0,
+                    };
+                  })
+                  .filter((point) => Number.isFinite(point.timestamp))
+              : [];
+            return acc;
+          },
+          {},
+        );
 
-        setHistory(loadedHistory);
+        setAnalytics(normalizedAnalytics);
+
+        const firstTab = Object.keys(normalizedAnalytics)[0] || "";
+        setActiveTab((currentTab) => currentTab || firstTab);
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
@@ -60,14 +78,8 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user]);
 
-  // Mock Graph Data for demonstration until assessments are fully taken
-  const mockTrendData = [
-    { date: "Mon", score: 12 },
-    { date: "Tue", score: 15 },
-    { date: "Wed", score: 10 },
-    { date: "Thu", score: 8 },
-    { date: "Fri", score: 6 },
-  ];
+  const testTabs = Object.keys(analytics);
+  const activeChartData = activeTab ? analytics[activeTab] || [] : [];
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in pb-20">
@@ -157,10 +169,10 @@ const Dashboard = () => {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-800">
-                Mood & Stress Trend
+                Assessment Analytics
               </h2>
               <p className="text-sm text-slate-500">
-                Your recent assessment scores
+                Scores and dates grouped by test type
               </p>
             </div>
             <div className="rounded-lg bg-slate-50 p-2 text-slate-500">
@@ -168,56 +180,96 @@ const Dashboard = () => {
             </div>
           </div>
 
+          <div className="mb-5 flex flex-wrap gap-2">
+            {testTabs.length > 0 ? (
+              testTabs.map((testType) => {
+                const isActive = testType === activeTab;
+                return (
+                  <button
+                    key={testType}
+                    type="button"
+                    onClick={() => setActiveTab(testType)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {testType}
+                  </button>
+                );
+              })
+            ) : (
+              <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-500">
+                No assessment data yet
+              </span>
+            )}
+          </div>
+
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={history.length > 3 ? history : mockTrendData}
-                margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#E2E8F0"
-                />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  padding={{ left: 10, right: 10 }}
-                  tick={{ fill: "#94A3B8", fontSize: 12 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94A3B8", fontSize: 12 }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "none",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
-                  cursor={{
-                    stroke: "#94A3B8",
-                    strokeWidth: 1,
-                    strokeDasharray: "4 4",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#10B981"
-                  strokeWidth={3}
-                  dot={{
-                    r: 4,
-                    fill: "#10B981",
-                    strokeWidth: 2,
-                    stroke: "#FFFFFF",
-                  }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <div className="flex h-full items-center justify-center rounded-2xl bg-slate-50 text-sm text-slate-500">
+                Loading analytics...
+              </div>
+            ) : activeChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={activeChartData}
+                  margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#E2E8F0"
+                  />
+                  <XAxis
+                    type="number"
+                    dataKey="timestamp"
+                    axisLine={false}
+                    tickLine={false}
+                    domain={["dataMin", "dataMax"]}
+                    tick={{ fill: "#94A3B8", fontSize: 12 }}
+                    tickFormatter={formatShortDate}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#94A3B8", fontSize: 12 }}
+                  />
+                  <Tooltip
+                    labelFormatter={formatFullDate}
+                    formatter={(value) => [value, "Score"]}
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "none",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    cursor={{
+                      stroke: "#94A3B8",
+                      strokeWidth: 1,
+                      strokeDasharray: "4 4",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#10B981"
+                    strokeWidth={3}
+                    dot={{
+                      r: 4,
+                      fill: "#10B981",
+                      strokeWidth: 2,
+                      stroke: "#FFFFFF",
+                    }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-500">
+                Select an assessment tab to view its score trend.
+              </div>
+            )}
           </div>
         </div>
 
