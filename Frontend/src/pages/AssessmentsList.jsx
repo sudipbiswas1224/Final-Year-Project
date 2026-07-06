@@ -95,7 +95,7 @@ const AssessmentsList = () => {
               to={`/assessments/${testId}`}
               className="group flex flex-col justify-between overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-md hover:ring-slate-200"
             >
-              <div className={`h-2 w-full bg-gradient-to-r ${meta.color}`} />
+              <div className={`h-2 w-full bg-linear-to-r ${meta.color}`} />
               <div className="p-6">
                 <h3 className="text-xl font-bold text-slate-800">
                   {meta.title}

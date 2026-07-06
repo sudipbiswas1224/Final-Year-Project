@@ -22,6 +22,7 @@
     "license": "MIT",
     "dependencies": {
         "@google/genai": "^2.10.0",
+        "@pinecone-database/pinecone": "^8.0.0",
         "@xenova/transformers": "^2.0.1",
         "axios": "^1.18.0",
         "bcryptjs": "^3.0.2",
@@ -38,6 +39,7 @@
         "mongoose": "^8.16.1",
         "morgan": "^1.10.0",
         "openai": "^5.8.2",
+        "socket.io": "^4.8.3",
         "xss-clean": "^0.1.4"
     },
     "devDependencies": {

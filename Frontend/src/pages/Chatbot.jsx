@@ -1,27 +1,131 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, User, Sparkles, Activity } from "lucide-react";
+import { useSelector } from "react-redux";
+import { Send, User, Sparkles, Activity } from "lucide-react";
 import axiosInstance from "../api/axios";
+import { io } from "socket.io-client";
+
+const welcomeMessage = {
+  id: "welcome",
+  role: "model",
+  text: "Hello there. I'm your AI companion. I'm here to listen, offer support, or guide you through a grounding exercise. How are you feeling today?",
+};
+
+const normalizeMessage = (message) => ({
+  id: message._id || message.id,
+  role: message.role === "model" ? "bot" : message.role,
+  text: message.content,
+  createdAt: message.createdAt,
+});
 
 const Chatbot = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: "bot",
-      text: "Hello there. I'm your AI companion. I'm here to listen, offer support, or guide you through a grounding exercise. How are you feeling today?",
-    },
-  ]);
+  const token = useSelector((state) => state.auth.token);
+  const [messages, setMessages] = useState([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const bottomRef = useRef(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    if (!token) {
+      return undefined;
+    }
+
+    let isMounted = true;
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      (import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "")
+        : "http://localhost:5000");
+
+    const socket = io(socketUrl, {
+      auth: { token },
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+    });
+
+    socketRef.current = socket;
+
+    const loadHistory = async () => {
+      try {
+        setIsHistoryLoading(true);
+        const response = await axiosInstance.get("/chat");
+        if (!isMounted) return;
+
+        const history = Array.isArray(response.data?.messages)
+          ? response.data.messages.map(normalizeMessage)
+          : [];
+
+        setMessages(history.length > 0 ? history : [welcomeMessage]);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+        if (isMounted) {
+          setMessages([welcomeMessage]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsHistoryLoading(false);
+        }
+      }
+    };
+
+    loadHistory();
+
+    const handleAiResponse = (payload) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: payload.clientId ? `${payload.clientId}-reply` : Date.now() + 1,
+          role: "bot",
+          text: payload.content,
+        },
+      ]);
+      setIsLoading(false);
+    };
+    const handleChatError = (payload) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "bot",
+          text: payload?.message || "I couldn't generate a reply just now.",
+        },
+      ]);
+      setIsLoading(false);
+    };
+
+    socket.on("ai-response", handleAiResponse);
+    socket.on("chat-error", handleChatError);
+
+    return () => {
+      isMounted = false;
+      socket.off("ai-response", handleAiResponse);
+      socket.off("chat-error", handleChatError);
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [token]);
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading || isHistoryLoading) return;
+
+    const socket = socketRef.current;
+    if (!socket) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "bot",
+          text: "The chat connection is not ready yet. Please wait a moment and try again.",
+        },
+      ]);
+      return;
+    }
 
     const userMessage = { id: Date.now(), role: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -29,29 +133,18 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      // POST /analysis/chat to get NLP response
-      const res = await axiosInstance.post("/analysis/chat", {
-        text: userMessage.text,
+      socket.emit("user-message", {
+        content: userMessage.text,
+        clientId: userMessage.id,
       });
-      const botResponse = {
-        id: Date.now() + 1,
-        role: "bot",
-        text:
-          res.data.response ||
-          res.data.reply ||
-          "I understand. I am here for you.",
-        emotion: res.data.detectedEmotion,
-      };
-      setMessages((prev) => [...prev, botResponse]);
     } catch (err) {
       console.error(err);
       const fallback = {
         id: Date.now() + 1,
         role: "bot",
-        text: "I'm having trouble connecting to my service right now, but please know you're not alone. Consider using the journal to express your thoughts.",
+        text: "I'm having trouble connecting right now, but please know you're not alone. Try again in a moment.",
       };
       setMessages((prev) => [...prev, fallback]);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -67,7 +160,7 @@ const Chatbot = () => {
           <div>
             <h2 className="text-lg font-bold text-slate-800">AI Companion</h2>
             <p className="text-xs font-medium text-emerald-500 flex items-center">
-              <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500"></span>{" "}
+              <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               Online & Listening
             </p>
           </div>
@@ -77,59 +170,48 @@ const Chatbot = () => {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
         <div className="mx-auto max-w-2xl space-y-6">
-          <AnimatePresence initial={false}>
-            {messages.map((msg) => {
-              const isBot = msg.role === "bot";
-              return (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className={`flex w-full ${isBot ? "justify-start" : "justify-end"}`}
+          {messages.map((msg) => {
+            const isBot = msg.role === "bot";
+            return (
+              <div
+                key={msg.id}
+                className={`flex w-full ${isBot ? "justify-start" : "justify-end"}`}
+              >
+                <div
+                  className={`flex max-w-[85%] sm:max-w-[75%] items-end ${isBot ? "flex-row" : "flex-row-reverse"}`}
                 >
                   <div
-                    className={`flex max-w-[85%] sm:max-w-[75%] items-end ${isBot ? "flex-row" : "flex-row-reverse"}`}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                      isBot
+                        ? "mr-3 bg-purple-100 text-purple-600"
+                        : "ml-3 bg-slate-200 text-slate-500"
+                    }`}
                   >
-                    {/* Avatar */}
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                        isBot
-                          ? "mr-3 bg-purple-100 text-purple-600"
-                          : "ml-3 bg-slate-200 text-slate-500"
-                      }`}
-                    >
-                      {isBot ? <Sparkles size={16} /> : <User size={16} />}
-                    </div>
-
-                    {/* Bubble */}
-                    <div
-                      className={`relative px-5 py-3.5 text-[0.95rem] shadow-sm leading-relaxed ${
-                        isBot
-                          ? "rounded-2xl rounded-bl-sm bg-white text-slate-700 ring-1 ring-slate-100"
-                          : "rounded-2xl rounded-br-sm bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
-                      }`}
-                    >
-                      {msg.text}
-
-                      {/* Emotion Tag (if bot detected one) */}
-                      {msg.emotion && (
-                        <span className="mt-2 block text-xs font-medium tracking-wide text-purple-500 uppercase">
-                          Detected: {msg.emotion}
-                        </span>
-                      )}
-                    </div>
+                    {isBot ? <Sparkles size={16} /> : <User size={16} />}
                   </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+
+                  <div
+                    className={`relative px-5 py-3.5 text-[0.95rem] shadow-sm leading-relaxed ${
+                      isBot
+                        ? "rounded-2xl rounded-bl-sm bg-white text-slate-700 ring-1 ring-slate-100"
+                        : "rounded-2xl rounded-br-sm bg-linear-to-br from-emerald-500 to-teal-600 text-white"
+                    }`}
+                  >
+                    {msg.text}
+
+                    {msg.emotion && (
+                      <span className="mt-2 block text-xs font-medium tracking-wide text-purple-500 uppercase">
+                        Detected: {msg.emotion}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
           {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-start"
-            >
-              <div className="flex items-center h-10 px-4 rounded-full bg-white ring-1 ring-slate-100 text-slate-400">
+            <div className="flex justify-start">
+              <div className="flex h-10 items-center rounded-full bg-white px-4 text-slate-400 ring-1 ring-slate-100">
                 <div className="flex space-x-1">
                   <div
                     className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
@@ -145,7 +227,7 @@ const Chatbot = () => {
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
           <div ref={bottomRef} className="h-4" /> {/* Spacer */}
         </div>
@@ -170,7 +252,7 @@ const Chatbot = () => {
             disabled={!input.trim() || isLoading}
             className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600"
           >
-            <Send size={18} className="translate-x-[-1px] translate-y-[1px]" />
+            <Send size={18} className="-translate-x-px translate-y-px" />
           </button>
         </form>
         <p className="mt-3 text-center text-xs text-slate-400">

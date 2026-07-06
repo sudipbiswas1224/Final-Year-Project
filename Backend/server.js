@@ -3,6 +3,8 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 const app = require('./app');
+const httpServer = require('http').createServer(app);
+const { initSocketServer } = require('./services/socketService');
 const assessmentRoutes = require('./routes/assessment');
 const analyticsRoutes = require('./routes/analytics');
 const AssessmentTestTemplate = require('./models/AssessmentTestTemplate');
@@ -25,12 +27,14 @@ app.use('/api', analyticsRoutes);
 // Connect to MongoDB and then start the server
 mongoose.connect(process.env.MONGO_URI).then(async () => {
   console.log('✅ MongoDB connected');
+  initSocketServer(httpServer); // Initialize the socket server after successful MongoDB connection
+  console.log('Socket server initialized')
 
   // Seed data after successful connection
   await autoSeedAssessments();
   await autoSeedResources();
 
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 }).catch((err) => {

@@ -61,6 +61,7 @@ exports.refreshNearbyDoctors = async (req, res) => {
         const { lat, lng } = req.body;
         const userLat = parseFloat(lat);
         const userLng = parseFloat(lng);
+        console.log('Refreshing doctors for location:', userLat, userLng);
 
         if (isNaN(userLat) || isNaN(userLng) || userLat < -90 || userLat > 90 || userLng < -180 || userLng > 180) {
             return res.status(400).json({

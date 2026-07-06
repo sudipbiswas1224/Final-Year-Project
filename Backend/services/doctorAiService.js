@@ -1,7 +1,7 @@
 const {GoogleGenAI} = require('@google/genai');
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
+    apiKey: process.env.GEMINI_API_KEY_DOCTOR
 });
 
 
@@ -144,6 +144,7 @@ const jsonFormat = `{
     }
 }`;
 const getDoctorsDirectory = async (lat, lng) => {
+    console.log("Fetching doctors directory for location:", lat, lng);
     const interaction = await ai.interactions.create({
         model: "gemini-3.5-flash",
         input: `My location latitude and longitude are ${lat} and ${lng }.You will give me the list of psychiatrist and psychologist doctors in a structured JSON format nearby me. The format is as follows: ${jsonFormat}. Ensure that the output strictly adheres to this format and does not include any additional text or explanations. The JSON should be valid and parsable.`
