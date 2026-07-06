@@ -14,6 +14,7 @@ function initSocketServer(httpServer) {
         },
     });
 
+    // middleware for the socket.io
     io.use(async (socket, next) => {
         const authToken = socket.handshake.auth?.token;
         const headerToken = socket.handshake.headers?.authorization?.startsWith("Bearer ")
@@ -83,11 +84,13 @@ ${memory.map((item) => item.metadata.text).join("\n")}
                         ],
                     },
                 ];
+                console.log('LTM is : ', ltm)
 
                 const stm = chatHistory.reverse().map((item) => ({
                     role: item.role,
                     parts: [{ text: item.content }],
                 }));
+                console.log('STM is : ', stm)
 
                 const aiResponse = await generateResponse([...ltm, ...stm]);
 
@@ -96,6 +99,8 @@ ${memory.map((item) => item.metadata.text).join("\n")}
                     clientId: messagePayload.clientId || null,
                 });
 
+
+                
                 const [responseMessage, aiResponseVector] = await Promise.all([
                     messageModel.create({
                         user: socket.user._id,
