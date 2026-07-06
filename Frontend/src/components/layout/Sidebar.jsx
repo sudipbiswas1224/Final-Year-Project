@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  ShieldAlert,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -27,6 +28,7 @@ const Sidebar = () => {
     { name: "AI Chat", path: "/chatbot", icon: MessageCircleHeart },
     { name: "Doctors", path: "/doctors", icon: Stethoscope },
     { name: "Profile", path: "/profile", icon: UserCircle },
+    { name: "Emergency SOS", path: "/sos", icon: ShieldAlert, isAlert: true },
   ];
 
   const handleLogout = () => {
@@ -76,6 +78,27 @@ const Sidebar = () => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname.startsWith(item.path);
+
+            if (item.isAlert) {
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all border border-red-500/20 shadow-xs mt-4 ${
+                    isActive
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : "bg-red-50/50 text-red-650 hover:bg-red-50 hover:text-red-700"
+                  }`}
+                >
+                  <Icon
+                    size={20}
+                    className="mr-3 text-red-500 animate-pulse shrink-0"
+                  />
+                  {item.name}
+                </Link>
+              );
+            }
 
             return (
               <Link

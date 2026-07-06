@@ -4,6 +4,8 @@ const userModel = require("../models/User");
 const { generateResponse, generateVector } = require("../services/messageAiService");
 const messageModel = require("../models/message");
 const { createMemory, queryMemory } = require("../services/vectorService");
+const nlpService = require("../services/nlpService");
+const { evaluateCrisis } = require("../middleware/crisisInterceptor");
 
 function initSocketServer(httpServer) {
     const io = new Server(httpServer, {
@@ -89,7 +91,20 @@ ${memory.map((item) => item.metadata.text).join("\n")}
                     parts: [{ text: item.content }],
                 }));
 
-                const aiResponse = await generateResponse([...ltm, ...stm]);
+                const [aiResponse, nlpResult] = await Promise.all([
+                    generateResponse([...ltm, ...stm]),
+                    nlpService.analyzeText(messagePayload.content).catch(err => {
+                        console.error("NLP service call failed:", err);
+                        return null;
+                    })
+                ]);
+
+                if (nlpResult) {
+                    const { isCrisis, crisisPayload } = await evaluateCrisis(nlpResult, socket.user._id, 'chat', messagePayload.content);
+                    if (isCrisis && crisisPayload) {
+                        socket.emit("crisis-alert", crisisPayload);
+                    }
+                }
 
                 socket.emit("ai-response", {
                     content: aiResponse,

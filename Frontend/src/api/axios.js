@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { store } from '../store/store';
 import { logout } from '../store/slices/authSlice';
+import { triggerCrisis } from '../store/slices/crisisSlice';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
@@ -25,12 +26,24 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-// Response Interceptor: Handle unauthenticated errors (e.g., 401)
+// Response Interceptor: Handle unauthenticated errors (e.g., 401) and global crisis signals
 axiosInstance.interceptors.response.use(
     (response) => {
+        // Check for crisis indicators in successful API responses
+        if (response.data && (response.data.crisisAlert === true || response.data.crisisLevel === 'high')) {
+            store.dispatch(triggerCrisis(response.data));
+        }
         return response;
     },
     (error) => {
+        // Also check error responses for crisis indicators
+        if (error.response && error.response.data) {
+            const data = error.response.data;
+            if (data.crisisAlert === true || data.crisisLevel === 'high') {
+                store.dispatch(triggerCrisis(data));
+            }
+        }
+
         // If our backend throws 401, it means token expired or invalid
         if (error.response && error.response.status === 401) {
             store.dispatch(logout()); // Log user out automatically

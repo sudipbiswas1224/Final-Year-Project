@@ -1,4 +1,5 @@
 const Journal = require("../models/Journal");
+const nlpService = require("../services/nlpService");
 
 // @desc    Create new journal entry
 // @route   POST /api/journal/create
@@ -13,25 +14,23 @@ exports.createJournal = async (req, res) => {
         .json({ success: false, error: "Title and content are required" });
     }
 
-    // Mock NLP Processing for NLP fields
-    const mockEmotion = "calm";
-    const mockSentiment = "positive";
-    const mockStressLevel = 2;
-    const mockKeywords = ["journal", "test"];
-    const mockDistortions = [];
-    const mockCrisisProbability = 0.01;
+    // Call NLP Service
+    const nlpResult = await nlpService.analyzeText(content);
 
     const journal = await Journal.create({
       userId: req.user._id,
       title,
       content,
-      emotion: mockEmotion,
-      sentiment: mockSentiment,
-      stressLevel: mockStressLevel,
-      keywords: mockKeywords,
-      distortions: mockDistortions,
-      crisisProbability: mockCrisisProbability,
+      emotion: nlpResult.detectedEmotion,
+      sentiment: nlpResult.sentiment,
+      stressLevel: nlpResult.stressLevel,
+      keywords: nlpResult.keywords,
+      distortions: nlpResult.distortions,
+      crisisProbability: nlpResult.crisisProbability,
     });
+
+    // Store NLP result in res.locals for crisisInterceptor middleware
+    res.locals.nlpResult = nlpResult;
 
     res.status(201).json({
       success: true,

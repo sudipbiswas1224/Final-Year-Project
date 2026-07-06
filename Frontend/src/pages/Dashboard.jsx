@@ -22,7 +22,6 @@ import {
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -53,7 +52,7 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
-        setLoading(false);
+        // data loaded
       }
     };
 
