@@ -7,13 +7,14 @@ const {
 } = require("../controllers/journalController");
 
 const { authenticate } = require("../middleware/auth");
+const { crisisInterceptor } = require("../middleware/crisisInterceptor");
 
 const router = express.Router();
 
 // Apply authentication middleware to all journal routes
 router.use(authenticate);
 
-router.post("/create", createJournal);
+router.post("/create", crisisInterceptor("journal"), createJournal);
 router.get("/all", getJournals);
 router.put("/update/:id", updateJournal);
 router.delete("/delete/:id", deleteJournal);

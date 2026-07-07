@@ -11,6 +11,8 @@ import JournalEditor from "./pages/JournalEditor";
 import Chatbot from "./pages/Chatbot";
 import Recommendations from "./pages/Recommendations";
 import DoctorDirectory from "./pages/DoctorDirectory";
+import SosDirectory from "./pages/SosDirectory";
+import SOSModal from "./components/SOSModal";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -21,6 +23,9 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+        {/* Global SOS Modal trigger */}
+        <SOSModal />
+
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -49,6 +54,9 @@ function App() {
             <Route path="/recommendations" element={<Recommendations />} />
 
             <Route path="/doctors" element={<DoctorDirectory />} />
+
+            {/* SOS / Crisis Directory Route */}
+            <Route path="/sos" element={<SosDirectory />} />
 
             <Route
               path="/profile"

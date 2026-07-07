@@ -11,11 +11,13 @@ const finalyearproject = pc.index('finalyearproject');
 
 //create memory : upserts the vector in the database 
 async function createMemory({ messageId, vector, metadata }) {
+    console.log('Creating memory request has come')
     if (!Array.isArray(vector) || vector.length === 0) {
         throw new Error('Cannot create memory: embedding vector is empty or invalid.');
     }
     const namespace = String(metadata.user);
     const recordId = String(messageId);
+    console.log('Record Id for the vector', recordId);
     // console.log('Creating memory with vector:', vector, 'Message ID:', recordId, 'Namespace user:', namespace);
     try {
         await finalyearproject.namespace(namespace).upsert({

@@ -1,4 +1,7 @@
 const Journal = require("../models/Journal");
+const nlpService = require("../services/nlpService");
+const { generateVector } = require('../services/messageAiService')
+const { createMemory } = require('../services/vectorService')
 
 // @desc    Create new journal entry
 // @route   POST /api/journal/create
@@ -13,25 +16,42 @@ exports.createJournal = async (req, res) => {
         .json({ success: false, error: "Title and content are required" });
     }
 
-    // Mock NLP Processing for NLP fields
-    const mockEmotion = "calm";
-    const mockSentiment = "positive";
-    const mockStressLevel = 2;
-    const mockKeywords = ["journal", "test"];
-    const mockDistortions = [];
-    const mockCrisisProbability = 0.01;
+    // Call NLP Service
+    const nlpResult = await nlpService.analyzeText(content);
 
-    const journal = await Journal.create({
-      userId: req.user._id,
-      title,
-      content,
-      emotion: mockEmotion,
-      sentiment: mockSentiment,
-      stressLevel: mockStressLevel,
-      keywords: mockKeywords,
-      distortions: mockDistortions,
-      crisisProbability: mockCrisisProbability,
+    const [journal, vector] = await Promise.all([
+      Journal.create({
+        userId: req.user._id,
+        title,
+        content,
+        emotion: nlpResult.detectedEmotion,
+        sentiment: nlpResult.sentiment,
+        stressLevel: nlpResult.stressLevel,
+        keywords: nlpResult.keywords,
+        distortions: nlpResult.distortions,
+        crisisProbability: nlpResult.crisisProbability,
+      }),
+      generateVector(content)
+    ]);
+    console.log('Vector for journal', vector);
+
+    const journalId = journal._id;
+    await createMemory({
+      messageId: journalId,
+      vector,
+      metadata: {
+        user: req.user._id,
+        text: content,
+        type: "journal",
+        timestamp: Date.now()
+      }
     });
+
+
+
+
+    // Store NLP result in res.locals for crisisInterceptor middleware
+    res.locals.nlpResult = nlpResult;
 
     res.status(201).json({
       success: true,
