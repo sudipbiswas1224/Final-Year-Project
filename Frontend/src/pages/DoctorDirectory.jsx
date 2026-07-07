@@ -146,7 +146,7 @@ const DoctorDirectory = () => {
             <button
               onClick={handleUseMyLocation}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-emerald-700 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-emerald-700 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 "
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={18} />
@@ -226,7 +226,7 @@ const DoctorDirectory = () => {
                             doctor.location?.city ||
                             "Nearby clinic"}
                         </p>
-                        <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                        <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-1 text-xs font-medium text-slate-400 dark:bg-slate-400 dark:text-slate-600">
                           <span>{doctor.experience ?? 0} years experience</span>
                           <span className="text-slate-300">|</span>
                           <span className="inline-flex items-center gap-1 text-amber-700">

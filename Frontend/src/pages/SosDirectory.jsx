@@ -135,9 +135,9 @@ const SosDirectory = () => {
   return (
     <div className="space-y-10 animate-fade-in pb-24">
       {/* SOS Title Banner */}
-      <div className="rounded-3xl bg-linear-to-r from-red-650 to-rose-700 p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-10 -mt-10 h-36 w-36 rounded-full bg-white opacity-5" />
-        <div className="absolute bottom-0 right-10 -mb-10 h-28 w-28 rounded-full bg-white opacity-5" />
+      <div className="rounded-3xl bg-linear-to-r from-red-500 to-rose-700 p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-10 -mt-10 h-36 w-36 rounded-full bg-white opacity-15" />
+        <div className="absolute bottom-0 right-10 -mb-10 h-28 w-28 rounded-full bg-white opacity-15" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -281,7 +281,7 @@ const SosDirectory = () => {
 
         {/* Helpline Directory Grid (Sidebar on Desktop, wraps to bottom on mobile) */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-white px-1">Official Support Hotlines</h3>
+          <h3 className="text-lg font-bold dark:text-white text-slate-900 px-1">Official Support Hotlines</h3>
           <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
             {helplines.map((helpline) => (
               <div

@@ -5,9 +5,11 @@ import axiosInstance from "../api/axios";
 import {
   Activity,
   BookHeart,
-  BrainCircuit,
+  ClipboardCheck,
   LineChart as LineIcon,
   ArrowRight,
+  BotMessageSquare,
+  Sprout,
 } from "lucide-react";
 import {
   LineChart,
@@ -38,6 +40,19 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -46,6 +61,7 @@ const Dashboard = () => {
         const res = await axiosInstance.get(`/assessment/analytics/${user.id}`);
 
         const groupedAnalytics = res.data || {};
+        console.log('Analytics data received', groupedAnalytics)
         const normalizedAnalytics = Object.entries(groupedAnalytics).reduce(
           (acc, [testType, points]) => {
             acc[testType] = Array.isArray(points)
@@ -64,7 +80,7 @@ const Dashboard = () => {
           },
           {},
         );
-
+        setLoading(false);
         setAnalytics(normalizedAnalytics);
 
         const firstTab = Object.keys(normalizedAnalytics)[0] || "";
@@ -79,6 +95,14 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user]);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good Morning";
+    if (hour >= 12 && hour < 17) return "Good Afternoon";
+    if (hour >= 17 && hour < 21) return "Good Evening";
+    return "Good Night";
+  };
+
   const testTabs = Object.keys(analytics);
   const activeChartData = activeTab ? analytics[activeTab] || [] : [];
 
@@ -91,7 +115,7 @@ const Dashboard = () => {
         <div className="absolute bottom-0 right-16 -mb-8 h-24 w-24 rounded-full bg-white opacity-10"></div>
 
         <h1 className="relative z-10 text-3xl font-bold tracking-tight md:text-4xl">
-          Good Morning,{" "}
+          {getGreeting()},{" "}
           {user?.displayName?.split(" ")[0] ||
             user?.name?.split(" ")[0] ||
             "Friend"}
@@ -111,16 +135,16 @@ const Dashboard = () => {
           className="group flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 hover:shadow-md hover:ring-slate-200 transition-all"
         >
           <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 group-hover:scale-105 transition-transform">
-            <BookHeart size={24} />
+            <Sprout size={24} />
           </div>
           <h3 className="text-lg font-semibold text-slate-800">
-            Write a Journal
+            Tend Your Mind Garden
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Express your thoughts securely.
+            Pour out your daily thoughts, feelings, and experiences securely.
           </p>
           <div className="mt-4 flex items-center text-sm font-medium text-orange-600 group-hover:text-orange-700">
-            Start writing <ArrowRight size={16} className="ml-1" />
+            Plant a thought <ArrowRight size={16} className="ml-1" />
           </div>
         </Link>
 
@@ -130,7 +154,7 @@ const Dashboard = () => {
           className="group flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 hover:shadow-md hover:ring-slate-200 transition-all"
         >
           <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:scale-105 transition-transform">
-            <BrainCircuit size={24} />
+            <ClipboardCheck size={24} />
           </div>
           <h3 className="text-lg font-semibold text-slate-800">
             Take an Assessment
@@ -149,10 +173,10 @@ const Dashboard = () => {
           className="group flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 hover:shadow-md hover:ring-slate-200 transition-all sm:col-span-2 lg:col-span-1"
         >
           <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 group-hover:scale-105 transition-transform">
-            <Activity size={24} />
+            <BotMessageSquare size={24} />
           </div>
           <h3 className="text-lg font-semibold text-slate-800">
-            Chat with AI Support
+            Chat with AI Companion
           </h3>
           <p className="mt-1 text-sm text-slate-500">
             Get empathetic, immediate guidance.
@@ -190,10 +214,10 @@ const Dashboard = () => {
                     key={testType}
                     type="button"
                     onClick={() => setActiveTab(testType)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                       isActive
                         ? "bg-emerald-600 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
                     }`}
                   >
                     {testType}
@@ -235,18 +259,27 @@ const Dashboard = () => {
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#94A3B8", fontSize: 12 }}
+                    tick={{ fill: "#98a7bcff", fontSize: 12 }}
                   />
                   <Tooltip
                     labelFormatter={formatFullDate}
                     formatter={(value) => [value, "Score"]}
                     contentStyle={{
-                      borderRadius: "8px",
-                      border: "none",
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                      borderRadius: "12px",
+                      border: isDark ? "1px solid #334155" : "1px solid #e2e8f0",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+                    }}
+                    labelStyle={{
+                      color: isDark ? "#f1f5f9" : "#1e293b",
+                      fontWeight: "bold",
+                      marginBottom: "4px",
+                    }}
+                    itemStyle={{
+                      color: isDark ? "#cbd5e1" : "#475569",
                     }}
                     cursor={{
-                      stroke: "#94A3B8",
+                      stroke: isDark ? "#475569" : "#94A3B8",
                       strokeWidth: 1,
                       strokeDasharray: "4 4",
                     }}

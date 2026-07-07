@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Landing from "./pages/Landing";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import AssessmentsList from "./pages/AssessmentsList";
@@ -13,6 +14,7 @@ import Recommendations from "./pages/Recommendations";
 import DoctorDirectory from "./pages/DoctorDirectory";
 import SosDirectory from "./pages/SosDirectory";
 import SOSModal from "./components/SOSModal";
+import Profile from "./pages/Profile";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -58,17 +60,10 @@ function App() {
             {/* SOS / Crisis Directory Route */}
             <Route path="/sos" element={<SosDirectory />} />
 
-            <Route
-              path="/profile"
-              element={
-                <div className="p-8 text-xl">
-                  Profile Page (Complete module structure installed!)
-                </div>
-              }
-            />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Landing />} />
         </Routes>
       </div>
     </BrowserRouter>

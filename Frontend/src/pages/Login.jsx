@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Leaf, AlertCircle, Loader2 } from "lucide-react";
+import { Leaf, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { PsykinLogo } from "./Landing";
+import toast from "react-hot-toast";
 import axiosInstance from "../api/axios";
 import {
   loginStart,
@@ -11,6 +13,7 @@ import {
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const { status, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,9 +25,10 @@ const Login = () => {
     e.preventDefault();
     dispatch(loginStart());
     try {
-        console.log(formData)
+      console.log(formData)
       const response = await axiosInstance.post("/auth/login", formData);
       if (response.data.success) {
+        toast.success("Logged in successfully! Welcome back.");
         dispatch(
           loginSuccess({
             user: response.data.user,
@@ -34,10 +38,10 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (err) {
+      const errorMsg = err.response?.data?.error || "Invalid credentials or server error.";
+      toast.error(errorMsg);
       dispatch(
-        loginFailure(
-          err.response?.data?.error || "Invalid credentials or server error.",
-        ),
+        loginFailure(errorMsg),
       );
     }
   };
@@ -46,14 +50,14 @@ const Login = () => {
     <div className="flex h-screen w-full items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
-            <Leaf size={24} />
+          <div className="mb-4">
+            <PsykinLogo size={56} />
           </div>
-          <h2 className="text-2xl font-semibold text-slate-800">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Welcome Back
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Sign in to continue your wellbeing journey.
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Sign in to continue your journey on Psykin.
           </p>
         </div>
 
@@ -90,16 +94,25 @@ const Login = () => {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-              className="w-full rounded-lg border border-slate-200 px-4 py-3 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full rounded-lg border border-slate-200 pl-4 pr-12 py-3 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer flex items-center justify-center"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button

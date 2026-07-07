@@ -1,0 +1,9 @@
+change the logos 
+make fit the login and the register page -> min number of character in password, eye icon
+make the landing page
+profile -> number of messages and session 
+make change in the backend nlp api key 
+give a good name to the app
+the theme problem 
+google login 
+formating the ai response

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Send, User, Sparkles, Activity } from "lucide-react";
+import { Send, User, Sparkles, Activity, BotMessageSquare } from "lucide-react";
 import axiosInstance from "../api/axios";
 import { io } from "socket.io-client";
 import { triggerCrisis } from "../store/slices/crisisSlice";
@@ -159,13 +159,15 @@ const Chatbot = () => {
   return (
     <div className="flex h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] flex-col animate-fade-in mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden relative">
       {/* Header */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 bg-white/80 px-6 backdrop-blur-md relative z-10">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 bg-white/80 dark:bg-slate-700 px-6 backdrop-blur-md relative z-10">
         <div className="flex items-center">
           <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600">
-            <Activity size={20} />
+            <BotMessageSquare size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-800">AI Companion</h2>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-black">
+              AI Companion
+            </h2>
             <p className="text-xs font-medium text-emerald-500 flex items-center">
               <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               Online & Listening

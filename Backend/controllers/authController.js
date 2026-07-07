@@ -14,7 +14,8 @@ const createToken = (userId) => {
 exports.register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, errors: errors.array() });
+    const errorMsg = errors.array().map(e => e.msg).join(", ");
+    return res.status(400).json({ success: false, error: errorMsg, errors: errors.array() });
   }
 
   try {

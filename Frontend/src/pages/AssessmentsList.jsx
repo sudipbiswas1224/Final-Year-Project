@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "../api/axios";
-import { BrainCircuit, Loader2, ArrowRight } from "lucide-react";
+import { ClipboardCheck, Loader2, ArrowRight } from "lucide-react";
 
 // Hardcoded meta-info to enrich the raw test IDs returned by the backend
 const testMeta = {
@@ -67,7 +67,7 @@ const AssessmentsList = () => {
     <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-20">
       <div className="flex flex-col items-center text-center">
         <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-          <BrainCircuit size={28} />
+          <ClipboardCheck size={28} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-800 md:text-4xl">
           Mental Health Assessments
