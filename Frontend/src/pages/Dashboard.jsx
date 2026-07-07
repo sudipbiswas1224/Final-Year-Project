@@ -34,9 +34,13 @@ const formatFullDate = (value) =>
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
+<<<<<<< HEAD
   const [analytics, setAnalytics] = useState({});
   const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
+=======
+  const [history, setHistory] = useState([]);
+>>>>>>> 9210204ba75070cee12c14c665525f07a8e5126b
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -71,7 +75,7 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
-        setLoading(false);
+        // data loaded
       }
     };
 

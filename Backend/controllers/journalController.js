@@ -18,6 +18,8 @@ exports.createJournal = async (req, res) => {
 
     // Call NLP Service
     const nlpResult = await nlpService.analyzeText(content);
+    // Call NLP Service
+    const nlpResult = await nlpService.analyzeText(content);
 
     const [journal, vector] = await Promise.all([
       Journal.create({
