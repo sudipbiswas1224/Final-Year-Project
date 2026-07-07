@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Send, User, Sparkles, Activity } from "lucide-react";
 import axiosInstance from "../api/axios";
 import { io } from "socket.io-client";
+import { triggerCrisis } from "../store/slices/crisisSlice";
 
 const welcomeMessage = {
   id: "welcome",
@@ -19,6 +20,7 @@ const normalizeMessage = (message) => ({
 
 const Chatbot = () => {
   const token = useSelector((state) => state.auth.token);
+  const dispatch = useDispatch();
   const [messages, setMessages] = useState([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -97,14 +99,19 @@ const Chatbot = () => {
       ]);
       setIsLoading(false);
     };
+    const handleCrisisAlert = (payload) => {
+      dispatch(triggerCrisis(payload));
+    };
 
     socket.on("ai-response", handleAiResponse);
     socket.on("chat-error", handleChatError);
+    socket.on("crisis-alert", handleCrisisAlert);
 
     return () => {
       isMounted = false;
       socket.off("ai-response", handleAiResponse);
       socket.off("chat-error", handleChatError);
+      socket.off("crisis-alert", handleCrisisAlert);
       socket.disconnect();
       socketRef.current = null;
     };

@@ -16,8 +16,7 @@ exports.createJournal = async (req, res) => {
         .json({ success: false, error: "Title and content are required" });
     }
 
-    // Call NLP Service
-    const nlpResult = await nlpService.analyzeText(content);
+   
     // Call NLP Service
     const nlpResult = await nlpService.analyzeText(content);
 
