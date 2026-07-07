@@ -2,7 +2,7 @@ const { GoogleGenAI } = require('@google/genai');
 
 class NlpService {
   constructor() {
-    const apiKey = process.env.GEMINI_API_KEY_CHAT || process.env.GEMINI_API_KEY_DOCTOR || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY_NLP || process.env.GEMINI_API_KEY_DOCTOR || process.env.GEMINI_API_KEY_CHAT;
     if (!apiKey) {
       console.warn('⚠️  Warning: No Gemini API Key found in environment variables. NLP Service will use fallback values.');
       this.ai = null;
@@ -56,6 +56,7 @@ Your task is to analyze the user input text and return a JSON object with:
       });
 
       const parsed = JSON.parse(response.text);
+      console.log(parsed)
 
       return {
         success: true,
