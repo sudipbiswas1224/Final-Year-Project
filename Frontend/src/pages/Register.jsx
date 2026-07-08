@@ -103,16 +103,28 @@ const Register = () => {
   };
 
   useEffect(() => {
-    /* global google */
-    if (typeof google !== "undefined" && import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-      google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleGoogleSuccess,
-      });
-      google.accounts.id.renderButton(
-        document.getElementById("google-signin-btn"),
-        { theme: "outline", size: "large", width: "100%", shape: "rectangular" }
-      );
+    const initializeGoogleBtn = () => {
+      /* global google */
+      if (typeof google !== "undefined" && import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+        google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleSuccess,
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("google-signin-btn"),
+          { theme: "outline", size: "large", width: "100%", shape: "rectangular" }
+        );
+      }
+    };
+
+    if (typeof google !== "undefined") {
+      initializeGoogleBtn();
+    } else {
+      const script = document.querySelector("script[src='https://accounts.google.com/gsi/client']");
+      if (script) {
+        script.addEventListener("load", initializeGoogleBtn);
+        return () => script.removeEventListener("load", initializeGoogleBtn);
+      }
     }
   }, []);
 

@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const theme = user?.preferences?.theme || "auto";
+  const theme = user?.preferences?.theme || "light";
 
   // Sync/Fetch profile on application mount (if authenticated)
   useEffect(() => {

@@ -581,27 +581,9 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Chat Messages */}
-                    <div className="bg-slate-50/50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-100/60 dark:border-slate-700/40 flex items-center gap-4">
-                      <div className="p-3 bg-emerald-100/50 dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 rounded-xl">
-                        <MessageSquare size={22} />
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Companion Chats</p>
-                        <p className="text-base font-bold text-slate-800 dark:text-white mt-0.5">{stats.totalMessages} Messages</p>
-                      </div>
-                    </div>
+                    
 
-                    {/* Active Sessions */}
-                    <div className="bg-slate-50/50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-100/60 dark:border-slate-700/40 flex items-center gap-4">
-                      <div className="p-3 bg-emerald-100/50 dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 rounded-xl">
-                        <Sparkles size={22} />
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Platform Sessions</p>
-                        <p className="text-base font-bold text-slate-800 dark:text-white mt-0.5">{stats.totalSessions} Sessions</p>
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
               )}
