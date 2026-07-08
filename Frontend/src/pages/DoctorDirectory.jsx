@@ -214,7 +214,7 @@ const DoctorDirectory = () => {
                     className="group rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-all hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                           {doctor.specialization || "Doctor"}
                         </div>
@@ -241,7 +241,7 @@ const DoctorDirectory = () => {
                         </div>
                       </div>
 
-                      <div className="rounded-2xl bg-white p-3 text-emerald-600 ring-1 ring-emerald-100">
+                      <div className="shrink-0 rounded-2xl bg-white p-3 text-emerald-600 ring-1 ring-emerald-100">
                         <Stethoscope size={20} />
                       </div>
                     </div>

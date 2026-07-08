@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect } from "react";
+import axiosInstance from "./api/axios";
+import { updateProfileSuccess } from "./store/slices/authSlice";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Landing from "./pages/Landing";
@@ -22,6 +25,59 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const theme = user?.preferences?.theme || "auto";
+
+  // Sync/Fetch profile on application mount (if authenticated)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const syncProfile = async () => {
+      try {
+        const res = await axiosInstance.get("/user/profile");
+        if (res.data.success) {
+          dispatch(updateProfileSuccess({ user: res.data.data }));
+        }
+      } catch (err) {
+        console.error("Failed to sync profile on app load:", err);
+      }
+    };
+
+    syncProfile();
+  }, [isAuthenticated, dispatch]);
+
+  // Global Theme listener and application
+  useEffect(() => {
+    const root = document.documentElement;
+    const applyTheme = (currentTheme) => {
+      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (
+        currentTheme === "dark" ||
+        (currentTheme === "auto" && systemPrefersDark)
+      ) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    };
+
+    applyTheme(theme);
+
+    if (theme === "auto") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = (e) => {
+        if (e.matches) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      };
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+  }, [theme]);
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">

@@ -32,7 +32,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
  */
 exports.fetchNearbyDoctors = async (req, res) => {
     try {
-        const savedDoctors = await Doctor.find({}).select('-__v').lean();
+        const savedDoctors = await Doctor.find({ userId: req.user.id }).select('-__v').lean();
 
         if (savedDoctors.length === 0) {
             return res.status(200).json({
@@ -71,13 +71,18 @@ exports.refreshNearbyDoctors = async (req, res) => {
         }
 
         const generatedDoctors = await getDoctorsDirectory(userLat, userLng);
-        const doctorList = Array.isArray(generatedDoctors?.data)
+        const rawDoctorList = Array.isArray(generatedDoctors?.data)
             ? generatedDoctors.data
             : Array.isArray(generatedDoctors)
                 ? generatedDoctors
                 : [];
 
-        await Doctor.deleteMany({});
+        const doctorList = rawDoctorList.map((doc) => ({
+            ...doc,
+            userId: req.user.id,
+        }));
+
+        await Doctor.deleteMany({ userId: req.user.id });
 
         if (doctorList.length > 0) {
             await Doctor.insertMany(doctorList);

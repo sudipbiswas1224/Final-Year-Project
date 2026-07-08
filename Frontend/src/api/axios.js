@@ -46,8 +46,11 @@ axiosInstance.interceptors.response.use(
 
         // If our backend throws 401, it means token expired or invalid
         if (error.response && error.response.status === 401) {
-            store.dispatch(logout()); // Log user out automatically
-            window.location.href = '/login'; // Redirect to login
+            const isAuthRoute = error.config?.url?.includes('login') || error.config?.url?.includes('register');
+            if (!isAuthRoute) {
+                store.dispatch(logout()); // Log user out automatically
+                window.location.href = '/login'; // Redirect to login
+            }
         }
         return Promise.reject(error);
     }

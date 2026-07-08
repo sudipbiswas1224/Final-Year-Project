@@ -9,7 +9,7 @@ const MainLayout = () => {
         {/* Mobile Header purely for spacing (if Sidebar doesn't have an absolute persistent header) */}
         <header className="flex h-16 shrink-0 items-center bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/60 px-4 shadow-sm md:hidden">
           <span className="ml-12 text-lg font-semibold text-emerald-600">
-            WellMind
+            Psykin
           </span>
         </header>
 

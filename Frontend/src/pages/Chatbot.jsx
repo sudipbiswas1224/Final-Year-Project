@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Send, User, Sparkles, Activity, BotMessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import axiosInstance from "../api/axios";
 import { io } from "socket.io-client";
 import { triggerCrisis } from "../store/slices/crisisSlice";
@@ -157,7 +158,7 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] flex-col animate-fade-in mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden relative">
+    <div className="flex h-[calc(100vh-5rem)] md:h-[calc(100vh-4.5rem)] flex-col animate-fade-in mx-auto w-full max-w-5xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden relative">
       {/* Header */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 bg-white/80 dark:bg-slate-700 px-6 backdrop-blur-md relative z-10">
         <div className="flex items-center">
@@ -206,7 +207,30 @@ const Chatbot = () => {
                         : "rounded-2xl rounded-br-sm bg-linear-to-br from-emerald-500 to-teal-600 text-white"
                     }`}
                   >
-                    {msg.text}
+                    {isBot ? (
+                      <ReactMarkdown
+                        components={{
+                          p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                          ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                          li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                          h1: ({ node, ...props }) => <h1 className="text-lg font-bold mb-2 text-slate-800 dark:text-white" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="text-base font-bold mb-2 text-slate-800 dark:text-white" {...props} />,
+                          h3: ({ node, ...props }) => <h3 className="text-sm font-bold mb-1 text-slate-800 dark:text-white" {...props} />,
+                          code: ({ node, inline, ...props }) => 
+                            inline ? (
+                              <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-sm font-mono" {...props} />
+                            ) : (
+                              <pre className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-sm font-mono overflow-x-auto my-2"><code {...props} /></pre>
+                            ),
+                          strong: ({ node, ...props }) => <strong className="font-semibold text-slate-900 dark:text-white" {...props} />
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
 
                     {msg.emotion && (
                       <span className="mt-2 block text-xs font-medium tracking-wide text-purple-500 uppercase">

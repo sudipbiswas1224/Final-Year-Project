@@ -110,8 +110,6 @@ const Profile = () => {
             joinDate: u.stats.joinDate || null,
           });
 
-          // Sync local theme immediately
-          applyTheme(u.preferences.theme || "auto");
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
@@ -126,19 +124,6 @@ const Profile = () => {
 
     fetchProfile();
   }, []);
-
-  // Apply Theme function
-  const applyTheme = (theme) => {
-    const root = document.documentElement;
-    if (
-      theme === "dark" ||
-      (theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  };
 
   // Auto-clear messages
   useEffect(() => {
@@ -188,7 +173,6 @@ const Profile = () => {
 
       if (res.data.success) {
         dispatch(updateProfileSuccess({ user: res.data.data }));
-        applyTheme(prefForm.theme);
         setMessage({ type: "success", text: "Application preferences updated!" });
       }
     } catch (err) {

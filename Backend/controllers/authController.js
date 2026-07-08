@@ -43,7 +43,9 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         displayName: user.profile.displayName,
-        email: user.email
+        email: user.email,
+        profile: user.profile,
+        preferences: user.preferences
       }
     });
   } catch (err) {
@@ -80,7 +82,9 @@ exports.login = async (req, res) => {
       user: {
         id: user._id,
         displayName: user.profile.displayName,
-        email: user.email
+        email: user.email,
+        profile: user.profile,
+        preferences: user.preferences
       }
     });
   } catch (err) {
