@@ -40,6 +40,7 @@
         "morgan": "^1.10.0",
         "nodemailer": "^9.0.3",
         "openai": "^5.8.2",
+        "resend": "^6.17.2",
         "socket.io": "^4.8.3",
         "xss-clean": "^0.1.4"
     },
